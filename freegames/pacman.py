@@ -2,11 +2,9 @@
 
 Exercises
 
-1. Change the board.
-2. Change the number of ghosts.
-3. Change where pacman starts.
-4. Make the ghosts faster/slower.
-5. Make the ghosts smarter.
+1. Change the number of ghosts.
+2. Add second pacman controlled by "w", "s", "a", "d"
+3. Make the ghosts slower.
 
 """
 
@@ -18,12 +16,13 @@ state = {'score': 0}
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
 aim = vector(5, 0)
+aim2 = vector(5, 0)
 pacman = vector(-40, -80)
+pacman2 = vector(40, 80)
 ghosts = [
     [vector(-180, 160), vector(5, 0)],
     [vector(-180, -160), vector(0, 5)],
     [vector(100, 160), vector(0, -5)],
-    [vector(100, -160), vector(-5, 0)],
 ]
 tiles = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -123,15 +122,30 @@ def move():
     goto(pacman.x + 10, pacman.y + 10)
     dot(20, 'yellow')
 
+    if valid(pacman2 + aim2):
+        pacman2.move(aim2)
+
+    index2 = offset(pacman2)
+
+    if tiles[index2] == 1:
+        tiles[index2] = 2
+        state['score'] += 1
+        x = (index2 % 20) * 20 - 200
+        y = 180 - (index2 // 20) * 20
+        square(x, y)
+
+    up()
+    goto(pacman2.x + 10, pacman2.y + 10)
+    dot(20, 'green')
+
     for point, course in ghosts:
         if valid(point + course):
             point.move(course)
         else:
             options = [
-                vector(5, 0),
-                vector(-5, 0),
-                vector(0, 5),
-                vector(0, -5),
+                vector(1, 0),
+                vector(0, 1),
+                vector(0, -1),
             ]
             plan = choice(options)
             course.x = plan.x
@@ -149,11 +163,66 @@ def move():
 
     ontimer(move, 100)
 
+"""
+def move2():
+    "Move pacman2 and all ghosts."
+    writer.undo()
+    writer.write(state['score'])
+
+    clear()
+
+    if valid(pacman2 + aim):
+        pacman2.move2(aim)
+
+    index = offset(pacman2)
+
+    if tiles[index] == 1:
+        tiles[index] = 2
+        state['score'] += 1
+        x = (index % 20) * 20 - 200
+        y = 180 - (index // 20) * 20
+        square(x, y)
+
+    up()
+    goto(pacman2.x + 10, pacman2.y + 10)
+    dot(20, 'yellow')
+
+    for point, course in ghosts:
+        if valid(point + course):
+            point.move2(course)
+        else:
+            options = [
+                vector(1, 0),
+                vector(0, 1),
+                vector(0, -1),
+            ]
+            plan = choice(options)
+            course.x = plan.x
+            course.y = plan.y
+
+        up()
+        goto(point.x + 10, point.y + 10)
+        dot(20, 'green')
+
+    update()
+
+    for point, course in ghosts:
+        if abs(pacman2 - point) < 20:
+            return
+
+    ontimer(move2, 100)
+"""
 def change(x, y):
     "Change pacman aim if valid."
     if valid(pacman + vector(x, y)):
         aim.x = x
         aim.y = y
+
+def change2(x, y):
+    "Change pacman2 aim if valid."
+    if valid(pacman2 + vector(x, y)):
+        aim2.x = x
+        aim2.y = y
 
 setup(420, 420, 370, 0)
 hideturtle()
@@ -162,10 +231,16 @@ writer.goto(160, 160)
 writer.color('white')
 writer.write(state['score'])
 listen()
-onkey(lambda: change(5, 0), 'Right')
-onkey(lambda: change(-5, 0), 'Left')
-onkey(lambda: change(0, 5), 'Up')
-onkey(lambda: change(0, -5), 'Down')
+onkey(lambda: change(10, 0), 'Right')
+onkey(lambda: change(-10, 0), 'Left')
+onkey(lambda: change(0, 10), 'Up')
+onkey(lambda: change(0, -10), 'Down')
+
+onkey(lambda: change2(10, 0), 'd')
+onkey(lambda: change2(-10, 0), 'a')
+onkey(lambda: change2(0, 10), 'w')
+onkey(lambda: change2(0, -10), 's')
+
 world()
 move()
 done()
